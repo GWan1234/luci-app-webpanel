@@ -1,10 +1,13 @@
 <ul class="cbi-tabmenu">
-    <li class="cbi-tab"><a href="<%=controller%>/webpanel"><%:Overview%></a></li>
-    <% local uci = require "luci.model.uci".cursor() %>
+    <li class="cbi-tab<% if not tab then %> cbi-tab-disabled<% end %>">
+        <a href="<%=controller%>/webpanel"><%:Overview%></a>
+    </li>
     <% uci:foreach("webpanel", "webpanel", function(s) %>
-        <li class="cbi-tab<% if tab == s['.name'] then %> cbi-tab-disabled<% end %>">
-            <a href="<%=controller%>/webpanel/<%=s['.name']%>"><%=s.name%></a>
-        </li>
+    <li class="cbi-tab<% if tab == s[".name"] then %> cbi-tab-disabled<% end %>">
+        <a href="<%=controller%>/webpanel/<%=s[".name"]%>"><%=s.name%></a>
+    </li>
     <% end) %>
-    <li class="cbi-tab"><a href="<%=controller%>/webpanel/settings"><%:Settings%></a></li>
+    <li class="cbi-tab<% if tab == "settings" then %> cbi-tab-disabled<% end %>">
+        <a href="<%=controller%>/webpanel/settings"><%:Settings%></a>
+    </li>
 </ul>
