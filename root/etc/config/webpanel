@@ -3,7 +3,3 @@ config webpanel 'panel1'
     option url 'http://192.168.66.1'
     option width '100%'
     option height '800px'
-
-config webpanel 'panel2'
-    option name '移远5g模块webui'
-    option url 'http://192.168.225.1'
