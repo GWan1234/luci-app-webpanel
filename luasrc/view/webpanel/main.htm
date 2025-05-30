@@ -1,0 +1,21 @@
+<%+header%>
+<div class="cbi-map">
+    <h2><%:Web Panel Management%></h2>
+    <ul class="cbi-tabmenu">
+        <li class="cbi-tab"><a href="<%=luci.dispatcher.build_url('admin/services/webpanel')%>"><%:Overview%></a></li>
+        <% local uci = require "luci.model.uci".cursor() %>
+        <% uci:foreach("webpanel", "webpanel", function(s) %>
+            <li class="cbi-tab<% if string.find(REQUEST_URI, s['.name']) then %> cbi-tab-disabled<% end %>">
+                <a href="<%=luci.dispatcher.build_url('admin/services/webpanel/'..s['.name'])%>"><%=s.name%></a>
+            </li>
+        <% end) %>
+        <li class="cbi-tab"><a href="<%=luci.dispatcher.build_url('admin/services/webpanel/settings')%>"><%:Settings%></a></li>
+    </ul>
+
+    <% if #self.children > 0 then %>
+        <%:No panel selected%>
+    <% else %>
+        <% include(viewcontent) %>
+    <% end %>
+</div>
+<%+footer%>
