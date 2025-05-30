@@ -40,7 +40,7 @@ define Package/luci-app-webpanel/install
 	$(INSTALL_DATA) ./luasrc/view/webpanel/nav.htm $(1)/usr/lib/lua/luci/view/webpanel/
 	
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/webpanel/panel
-	$(INSTALL_DATA) ./luasrc/view/webpanel/panel/*.htm $(1)/usr/lib/lua/luci/view/webpanel/panel/
+	$(INSTALL_DATA) ./luasrc/view/webpanel/panel/view.htm $(1)/usr/lib/lua/luci/view/webpanel/panel/
 	
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DATA) ./root/etc/config/webpanel $(1)/etc/config/
