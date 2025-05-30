@@ -1,17 +1,22 @@
 <%+header%>
 <div class="cbi-map">
-    <h2><%:Panel%>: <%=panel.name or "Unnamed"%></h2>
+    <h2 name="content"><%:Web Panel%>: <%=panel_name%></h2>
     <%+webpanel/nav%>
     
-    <% if panel.url then %>
-    <iframe src="<%=panel.url%>" 
-            style="width:<%=panel.width or '100%'%>;
-                   height:<%=panel.height or '800px'%>;
-                   border:none;">
-    </iframe>
+    <% if panel_url and panel_url ~= "" then %>
+    <div class="cbi-section">
+        <iframe src="<%=panel_url%>" 
+                style="width:<%=panel_width%>;height:<%=panel_height%>;
+                       border:none;background:white">
+        </iframe>
+    </div>
     <% else %>
     <div class="alert-message error">
-        <%:This panel has no valid URL configuration%>
+        <%:This panel has no valid URL configured%>
+        <br>
+        <a href="<%=luci.dispatcher.build_url('admin/services/webpanel/settings')%>">
+            <%:Configure it in settings%>
+        </a>
     </div>
     <% end %>
 </div>
