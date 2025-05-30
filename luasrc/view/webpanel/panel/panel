@@ -1,0 +1,11 @@
+<%+header%>
+<div class="cbi-map">
+    <h2><%:Panel%>: <%=panel.name or "Unnamed"%></h2>
+    <%+webpanel/nav%>
+    <iframe src="<%=panel.url%>" 
+            style="width:<%=panel.width or '100%'%>;
+                   height:<%=panel.height or '800px'%>;
+                   border:none;">
+    </iframe>
+</div>
+<%+footer%>
