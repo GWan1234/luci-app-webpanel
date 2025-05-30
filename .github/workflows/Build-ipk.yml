@@ -3,6 +3,9 @@ name: Build and Release luci-app-webpanel (SDK)
 on: 
   repository_dispatch:
   workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build:
