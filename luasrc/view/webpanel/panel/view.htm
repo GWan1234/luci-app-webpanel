@@ -1,0 +1,18 @@
+<%+header%>
+<div class="cbi-map">
+    <h2><%:Panel%>: <%=panel.name or "Unnamed"%></h2>
+    <%+webpanel/nav%>
+    
+    <% if panel.url then %>
+    <iframe src="<%=panel.url%>" 
+            style="width:<%=panel.width or '100%'%>;
+                   height:<%=panel.height or '800px'%>;
+                   border:none;">
+    </iframe>
+    <% else %>
+    <div class="alert-message error">
+        <%:This panel has no valid URL configuration%>
+    </div>
+    <% end %>
+</div>
+<%+footer%>
