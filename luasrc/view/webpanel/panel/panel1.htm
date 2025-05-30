@@ -1,9 +1,4 @@
-<%+webpanel/main%>
-<div class="cbi-section">
-    <iframe src="<%=luci.model.uci().get('webpanel', 'panel1', 'url')%>" 
-            style="width: <%=luci.model.uci().get('webpanel', 'panel1', 'width') or '100%'%>;
-                   height: <%=luci.model.uci().get('webpanel', 'panel1', 'height') or '800px'%>;
-                   border: none; margin-top: 10px;"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups">
-    </iframe>
-</div>
+<iframe src="<%=panel_config.url%>" 
+        style="width:<%=panel_config.width%>;height:<%=panel_config.height%>;
+               border:none;background:white">
+</iframe>
