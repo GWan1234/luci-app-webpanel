@@ -1,0 +1,31 @@
+<%+header%>
+
+<%
+local uci = require "luci.model.uci".cursor()
+local panels = uci:get_all("webpanel")
+%>
+
+<div class="cbi-map">
+    <h2><%:Web Panels%></h2>
+    
+    <ul class="nav nav-tabs">
+        <% for i, panel in pairs(panels or {}) do %>
+        <li class="<% if i == 1 then %>active<% end %>">
+            <a href="#<%=panel['.name']%>" data-toggle="tab"><%=panel.name%></a>
+        </li>
+        <% end %>
+    </ul>
+    
+    <div class="tab-content">
+        <% for i, panel in pairs(panels or {}) do %>
+        <div class="tab-pane <% if i == 1 then %>active<% end %>" id="<%=panel['.name']%>">
+            <iframe src="<%=panel.url%>" 
+                    style="width: <%=panel.width or '100%'%>; 
+                           height: <%=panel.height or '800px'%>; 
+                           border: none; margin-top: 10px;"></iframe>
+        </div>
+        <% end %>
+    </div>
+</div>
+
+<%+footer%>
