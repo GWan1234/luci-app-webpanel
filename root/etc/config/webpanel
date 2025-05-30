@@ -1,5 +1,5 @@
 config webpanel 'panel1'
     option name '5G壳子webui'
-    option url 'http://192.168.66.1'
+    option url 'http://192.168.66.1:9527'
     option width '100%'
     option height '800px'
