@@ -1,28 +1,34 @@
 module("luci.controller.webpanel", package.seeall)
 
-local uci = luci.model.uci.cursor()
-local dispatcher = luci.dispatcher
+local uci = require "luci.model.uci".cursor()
+local dispatcher = require "luci.dispatcher"
+local sys = require "luci.sys"
 
-function index()
-    -- 主入口
-    entry({"admin", "services", "webpanel"}, firstchild(), _("Web Panels"), 60).dependent = false
+function _create_menu_entries()
+    -- 主入口必须保持独立
+    entry({"admin", "services", "webpanel"}, firstchild(), _("Web Panels"), 60).index = true
     entry({"admin", "services", "webpanel", "config"}, cbi("webpanel/config"), _("Configuration"), 1)
     
-    -- 动态加载所有面板
+    -- 动态面板注册（确保不干扰主入口）
     uci:foreach("webpanel", "panel", function(s)
-        if s[".name"] and s.name then
-            entry({"admin", "services", "webpanel", s[".name"]}, call("action_view"), s.name, tonumber(s.order) or 10)
+        if s[".name"] and s.name and s.url then
+            entry(
+                {"admin", "services", "webpanel", s[".name"]},
+                call("action_view_panel"),
+                s.name,
+                nil,  -- 自动排序
+                function() return s[".name"] end  -- 动态参数传递
+            )
         end
     end)
 end
 
-function action_view()
-    local panel_id = dispatcher.context.path[4]
+function action_view_panel()
+    local panel_id = dispatcher.context.request.args[1] or ""
     local panel = uci:get_all("webpanel", panel_id)
     
-    if not panel then
-        dispatcher.error404("Panel not found")
-        return
+    if not panel or not panel.url then
+        return dispatcher.error404("Requested panel not found")
     end
 
     luci.template.render("webpanel/iframe", {
@@ -31,9 +37,10 @@ function action_view()
     })
 end
 
--- 配置变更时重建缓存
-function on_config_change()
-    dispatcher.build_url_cache()
-end
+-- 初始化菜单（带错误保护）
+pcall(_create_menu_entries)
 
-uci:revert("webpanel", on_config_change)
+-- 配置变更自动刷新（安全版）
+uci:revert("webpanel", function()
+    pcall(dispatcher.build_url_cache)
+end)
