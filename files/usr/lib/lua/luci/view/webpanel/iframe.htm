@@ -1,0 +1,48 @@
+<%+header%>
+
+<div class="cbi-map">
+    <h2 name="content"><%:Embedded Web Panel%></h2>
+    
+    <div class="cbi-map-descr">
+        <%:This page displays an external web panel embedded in the OpenWRT interface.%>
+    </div>
+    
+    <fieldset class="cbi-section">
+        <%
+        local uci = require "luci.model.uci".cursor()
+        local url = uci:get("webpanel", "config", "url") or ""
+        local width = uci:get("webpanel", "config", "width") or "100%"
+        local height = uci:get("webpanel", "config", "height") or "600px"
+        local border = uci:get("webpanel", "config", "border") or "1"
+        local scrolling = uci:get("webpanel", "config", "scrolling") or "1"
+        local refresh = tonumber(uci:get("webpanel", "config", "refresh") or "0")
+        
+        local style = string.format("width: %s; height: %s; border: %s;", 
+            width, height, border == "1" and "1px solid #ccc" or "none")
+        %>
+        
+        <iframe id="embedded-panel" 
+                src="<%=url%>" 
+                style="<%=style%>"
+                scrolling="<%=scrolling == '1' and 'yes' or 'no'%>"
+                allowfullscreen>
+        </iframe>
+        
+        <% if refresh > 0 then %>
+        <script type="text/javascript">
+            setInterval(function() {
+                var iframe = document.getElementById('embedded-panel');
+                iframe.src = iframe.src;
+            }, <%=refresh * 1000%>);
+        </script>
+        <% end %>
+    </fieldset>
+    
+    <div class="cbi-page-actions">
+        <form class="inline" action="<%=url('admin/services/webpanel/config')%>">
+            <input class="cbi-button cbi-button-apply" type="submit" value="<%:Edit Settings%>"/>
+        </form>
+    </div>
+</div>
+
+<%+footer%>
