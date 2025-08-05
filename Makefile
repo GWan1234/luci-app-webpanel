@@ -1,6 +1,6 @@
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=uci-app-webpanel
+PKG_NAME:=luci-app-webpanel
 PKG_VERSION:=1.0
 PKG_RELEASE:=1
 
@@ -8,7 +8,7 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/uci-app-webpanel
+define Package/luci-app-webpanel
   SECTION:=luci
   CATEGORY:=LuCI
   SUBMENU:=3. Applications
@@ -17,7 +17,7 @@ define Package/uci-app-webpanel
   DEPENDS:=+luci-base
 endef
 
-define Package/uci-app-webpanel/description
+define Package/luci-app-webpanel/description
   Allows embedding external web pages in the LuCI interface.
 endef
 
@@ -30,7 +30,7 @@ endef
 define Build/Compile
 endef
 
-define Package/uci-app-webpanel/install
+define Package/luci-app-webpanel/install
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) ./files/etc/config/myiframe $(1)/etc/config/myiframe
 	
@@ -44,4 +44,4 @@ define Package/uci-app-webpanel/install
 	$(INSTALL_DATA) ./files/usr/lib/lua/luci/view/myiframe/iframe.htm $(1)/usr/lib/lua/luci/view/myiframe/
 endef
 
-$(eval $(call BuildPackage,uci-app-webpanel))
+$(eval $(call BuildPackage,luci-app-webpanel))
