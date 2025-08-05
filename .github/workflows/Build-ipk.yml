@@ -14,28 +14,38 @@ jobs:
         sdk: 
           - 'openwrt-sdk-23.05.0-x86-64_gcc-12.3.0_musl.Linux-x86_64'
           - 'openwrt-sdk-22.03.5-x86-64_gcc-11.2.0_musl.Linux-x86_64'
+      fail-fast: false  # 防止一个失败导致全部取消
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Set up SDK
       run: |
-        SDK_URL="https://downloads.openwrt.org/releases/$(echo ${{ matrix.sdk }} | cut -d'-' -f3)/targets/$(echo ${{ matrix.sdk }} | cut -d'-' -f4)/$(echo ${{ matrix.sdk }} | cut -d'-' -f5)/${{ matrix.sdk }}.tar.xz"
-        echo "Downloading SDK from: $SDK_URL"
-        wget $SDK_URL -O sdk.tar.xz
+        # 提取版本信息
+        VERSION=$(echo ${{ matrix.sdk }} | cut -d'-' -f3)
+        TARGET=$(echo ${{ matrix.sdk }} | cut -d'-' -f4)
+        SUBTARGET=$(echo ${{ matrix.sdk }} | cut -d'-' -f5)
+        
+        # 构建SDK下载URL
+        SDK_URL="https://downloads.openwrt.org/releases/${VERSION}/targets/${TARGET}/${SUBTARGET}/${MATRIX_SDK}.tar.xz"
+        echo "Downloading SDK from: ${SDK_URL}"
+        
+        # 下载并解压SDK
+        wget ${SDK_URL} -O sdk.tar.xz
         tar -xf sdk.tar.xz
         mv ${{ matrix.sdk }} openwrt-sdk
         echo "SDK_PATH=$(pwd)/openwrt-sdk" >> $GITHUB_ENV
     
     - name: Build package
       run: |
-        # 复制文件到正确位置
-        mkdir -p $SDK_PATH/package/luci-app-webpanel
-        cp -r ./files $SDK_PATH/package/luci-app-webpanel/
-        cp ./Makefile $SDK_PATH/package/luci-app-webpanel/
+        # 复制文件到SDK目录
+        mkdir -p ${SDK_PATH}/package/luci-app-webpanel
+        cp -r ./files ${SDK_PATH}/package/luci-app-webpanel/
+        cp ./Makefile ${SDK_PATH}/package/luci-app-webpanel/
         
         # 进入SDK目录
-        cd $SDK_PATH
+        cd ${SDK_PATH}
         
         # 更新feeds
         ./scripts/feeds update -a
@@ -45,12 +55,13 @@ jobs:
         make package/luci-app-webpanel/compile V=s
         
         # 复制生成的IPK文件
-        mkdir -p ../artifacts/${{ matrix.sdk }}
-        find bin/ -name "luci-app-webpanel*.ipk" -exec cp {} ../artifacts/${{ matrix.sdk }} \;
+        mkdir -p ../artifacts/${MATRIX_SDK}
+        find bin/ -name "luci-app-webpanel*.ipk" -exec cp {} ../artifacts/${MATRIX_SDK} \;
     
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # 使用v4版本
       with:
-        name: ipk-packages
-        path: artifacts/
+        name: ipk-packages-${{ matrix.sdk }}
+        path: artifacts/${{ matrix.sdk }}/
         if-no-files-found: error
+        retention-days: 5
