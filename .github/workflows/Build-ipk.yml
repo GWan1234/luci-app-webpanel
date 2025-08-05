@@ -1,52 +1,92 @@
-name: Build OpenWRT IPK Package
+name: Build and Release luci-app-webpanel (SDK)
 
-on:
+on: 
+  repository_dispatch:
+  workflow_dispatch:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - 'v*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        sdk: 
-          - 'openwrt-sdk-22.03.5-x86-64_gcc-11.2.0_musl.Linux-x86_64'
-          # Add more SDK versions as needed
+    
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-    
-    - name: Set up SDK
+      uses: actions/checkout@v4
+      
+    - name: Set up OpenWrt SDK
       run: |
-        SDK_URL="https://downloads.openwrt.org/releases/22.03.5/targets/x86/64/${{ matrix.sdk }}.tar.xz"
+        sudo apt-get update
+        sudo apt-get install -y build-essential libncurses5-dev zlib1g-dev wget
+        # 下载 Mediatek Filogic 架构的 SDK (23.05 版本)
+        SDK_URL="https://downloads.openwrt.org/releases/23.05.0/targets/mediatek/filogic/openwrt-sdk-23.05.0-mediatek-filogic_gcc-12.3.0_musl.Linux-x86_64.tar.xz"
         wget $SDK_URL
-        tar -xf ${{ matrix.sdk }}.tar.xz
-        mv ${{ matrix.sdk }} openwrt-sdk
-        echo "SDK_PATH=$(pwd)/openwrt-sdk" >> $GITHUB_ENV
-    
+        tar xf openwrt-sdk-*.tar.xz
+        rm openwrt-sdk-23.05.0-mediatek-filogic_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+        cd openwrt-sdk-*
+        echo "SDK_PATH=$PWD" >> $GITHUB_ENV
+        
+    - name: Prepare plugin
+      run: |
+        mkdir -p $SDK_PATH/package/luci-app-webpanel
+        cp -r ../files $SDK_PATH/package/luci-app-webpanel/
+        cp Makefile $SDK_PATH/package/luci-app-webpanel/
+        # 确保 feeds 已更新
+        $SDK_PATH/scripts/feeds update -a
+        $SDK_PATH/scripts/feeds install -a
+        
     - name: Build package
       run: |
         cd $SDK_PATH
-        mkdir -p package/myiframe-plugin
-        cp -r ../files package/myiframe-plugin/
-        cp ../Makefile package/myiframe-plugin/
+        # 生成默认配置
+        cat > .config <<EOF
+        CONFIG_TARGET_mediatek=y
+        CONFIG_TARGET_mediatek_filogic=y
+        CONFIG_PACKAGE_luci-app-webpanel=y
+        CONFIG_PACKAGE_luci-i18n-webpanel-zh-cn=y
+        EOF
+        make defconfig
+        # 编译插件 (失败时显示详细日志)
+        make package/luci-app-webpanel/compile -j$(nproc) || make package/luci-app-webpanel/compile V=s
         
-        # Update feeds and install dependencies
-        ./scripts/feeds update -a
-        ./scripts/feeds install -a
+    - name: Collect artifacts
+      run: |
+        mkdir -p artifacts
+        find $SDK_PATH/bin -name "luci-app-webpanel*.ipk" -exec cp {} artifacts/ \;
+        find $SDK_PATH/bin -name "luci-i18n-webpanel-zh-cn*.ipk" -exec cp {} artifacts/ \;
         
-        # Build the package
-        make package/myiframe-plugin/compile V=s
-        
-        # Copy the built package
-        mkdir -p ../artifacts
-        cp bin/packages/*/base/uci-app-webpanel*.ipk ../artifacts/
-    
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ipk-packages
         path: artifacts/
-        if-no-files-found: error
+        
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ipk-packages
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: Release ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
+        body: |
+          OpenWrt 23.05 Web Panel 插件包 (Mediatek Filogic 架构)
+          功能特性:
+          - 可配置多个内嵌网页
+          - 支持自定义URL和端口
+          - 标签页切换管理
+          包含文件:
+          - luci-app-webpanel_*.ipk
+          - luci-i18n-webpanel-zh-cn_*.ipk
+        files: |
+          *.ipk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
