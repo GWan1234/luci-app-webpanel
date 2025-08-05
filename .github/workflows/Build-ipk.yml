@@ -4,8 +4,7 @@ on:
   repository_dispatch:
   workflow_dispatch:
   push:
-    tags:
-      - 'v*'
+    branches: [ main ]
 
 jobs:
   build:
