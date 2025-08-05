@@ -1,0 +1,8 @@
+<div class="cbi-value-field">
+    <input type="text" class="cbi-input-text" name="<%=cbid%>" value="<%=self:formvalue(cbid)%>"<%=attr("size", self.size)%> />
+    <select class="cbi-input-select" name="<%=cbid%>_unit" onchange="this.previousElementSibling.value=this.value">
+        <option value="100%">100%</option>
+        <option value="800px">800px</option>
+        <option value="600px">600px</option>
+    </select>
+</div>
