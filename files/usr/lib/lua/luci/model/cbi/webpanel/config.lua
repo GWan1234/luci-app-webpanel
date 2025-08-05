@@ -15,47 +15,57 @@ s = m:section(TypedSection, "panel", translate("Web Panels"),
 s.template = "cbi/tblsection"
 s.addremove = true
 s.anonymous = false
+s.extedit = dispatcher.build_url("admin/services/webpanel/config/%s")
 
--- 名称
-o = s:option(Value, "name", translate("Panel Name"))
+-- 表头定义 (确保列数匹配)
+s.sectionhead = translate("Panel Name")
+s.sectiondescription = translate("Panel Settings")
+
+-- 名称 (作为section标题)
+function s.cfgsections(self)
+    local sections = {}
+    uci:foreach("webpanel", "panel", function(s) 
+        if s[".name"] then
+            sections[#sections + 1] = s[".name"]
+        end
+    end)
+    return sections
+end
+
+-- 各选项定义 (确保顺序和表头一致)
+o = s:option(Value, "name", translate("Name"))
 o.datatype = "string"
 o.rmempty = false
-o.description = translate("Display name for this web panel in the menu")
+o.width = "15%"
 
--- URL
-o = s:option(Value, "url", translate("Panel URL"))
+o = s:option(Value, "url", translate("URL"))
 o.datatype = "string"
 o.rmempty = false
-o.description = translate("Full URL of the web panel (e.g. http://192.168.1.1:8080)")
+o.width = "20%"
 
--- 宽度
 o = s:option(Value, "width", translate("Width"))
+o.datatype = "string"
 o.default = "100%"
-o.datatype = "string"
-o.description = translate("Width of the embedded frame (e.g. 100% or 800px)")
+o.width = "10%"
 
--- 高度
 o = s:option(Value, "height", translate("Height"))
-o.default = "600px"
 o.datatype = "string"
-o.description = translate("Height of the embedded frame (e.g. 600px)")
+o.default = "600px"
+o.width = "10%"
 
--- 边框
-o = s:option(Flag, "border", translate("Show Border"))
+o = s:option(Flag, "border", translate("Border"))
 o.default = "1"
 o.rmempty = false
-o.description = translate("Show border around the embedded frame")
+o.width = "10%"
 
--- 滚动条
-o = s:option(Flag, "scrolling", translate("Enable Scrolling"))
+o = s:option(Flag, "scrolling", translate("Scrolling"))
 o.default = "1"
 o.rmempty = false
-o.description = translate("Enable scrollbars if content is larger than frame")
+o.width = "10%"
 
--- 刷新间隔
-o = s:option(Value, "refresh", translate("Refresh Interval"))
+o = s:option(Value, "refresh", translate("Refresh(s)"))
 o.datatype = "uinteger"
 o.default = "0"
-o.description = translate("Auto-refresh interval in seconds (0 to disable)")
+o.width = "10%"
 
 return m
