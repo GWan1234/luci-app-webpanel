@@ -1,67 +1,92 @@
-name: Build LuCI Web Panel Plugin
+name: Build and Release luci-app-webpanel (SDK)
 
-on:
+on: 
+  repository_dispatch:
+  workflow_dispatch:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    tags:
+      - 'v*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        sdk: 
-          - 'openwrt-sdk-23.05.0-x86-64_gcc-12.3.0_musl.Linux-x86_64'
-          - 'openwrt-sdk-22.03.5-x86-64_gcc-11.2.0_musl.Linux-x86_64'
-      fail-fast: false  # 防止一个失败导致全部取消
-
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
-    - name: Set up SDK
+      
+    - name: Set up OpenWrt SDK
       run: |
-        # 提取版本信息
-        VERSION=$(echo ${{ matrix.sdk }} | cut -d'-' -f3)
-        TARGET=$(echo ${{ matrix.sdk }} | cut -d'-' -f4)
-        SUBTARGET=$(echo ${{ matrix.sdk }} | cut -d'-' -f5)
+        sudo apt-get update
+        sudo apt-get install -y build-essential libncurses5-dev zlib1g-dev wget
+        # 下载 Mediatek Filogic 架构的 SDK (23.05 版本)
+        SDK_URL="https://downloads.openwrt.org/releases/23.05.0/targets/mediatek/filogic/openwrt-sdk-23.05.0-mediatek-filogic_gcc-12.3.0_musl.Linux-x86_64.tar.xz"
+        wget $SDK_URL
+        tar xf openwrt-sdk-*.tar.xz
+        rm openwrt-sdk-23.05.0-mediatek-filogic_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+        cd openwrt-sdk-*
+        echo "SDK_PATH=$PWD" >> $GITHUB_ENV
         
-        # 构建SDK下载URL
-        SDK_URL="https://downloads.openwrt.org/releases/${VERSION}/targets/${TARGET}/${SUBTARGET}/${MATRIX_SDK}.tar.xz"
-        echo "Downloading SDK from: ${SDK_URL}"
+    - name: Prepare plugin
+      run: |
+        mkdir -p $SDK_PATH/package/luci-app-webpanel
+        cp -r ../files $SDK_PATH/package/luci-app-webpanel/
+        cp Makefile $SDK_PATH/package/luci-app-webpanel/
+        # 确保 feeds 已更新
+        $SDK_PATH/scripts/feeds update -a
+        $SDK_PATH/scripts/feeds install -a
         
-        # 下载并解压SDK
-        wget ${SDK_URL} -O sdk.tar.xz
-        tar -xf sdk.tar.xz
-        mv ${{ matrix.sdk }} openwrt-sdk
-        echo "SDK_PATH=$(pwd)/openwrt-sdk" >> $GITHUB_ENV
-    
     - name: Build package
       run: |
-        # 复制文件到SDK目录
-        mkdir -p ${SDK_PATH}/package/luci-app-webpanel
-        cp -r ./files ${SDK_PATH}/package/luci-app-webpanel/
-        cp ./Makefile ${SDK_PATH}/package/luci-app-webpanel/
+        cd $SDK_PATH
+        # 生成默认配置
+        cat > .config <<EOF
+        CONFIG_TARGET_mediatek=y
+        CONFIG_TARGET_mediatek_filogic=y
+        CONFIG_PACKAGE_luci-app-webpanel=y
+        CONFIG_PACKAGE_luci-i18n-webpanel-zh-cn=y
+        EOF
+        make defconfig
+        # 编译插件 (失败时显示详细日志)
+        make package/luci-app-webpanel/compile -j$(nproc) || make package/luci-app-webpanel/compile V=s
         
-        # 进入SDK目录
-        cd ${SDK_PATH}
+    - name: Collect artifacts
+      run: |
+        mkdir -p artifacts
+        find $SDK_PATH/bin -name "luci-app-webpanel*.ipk" -exec cp {} artifacts/ \;
+        find $SDK_PATH/bin -name "luci-i18n-webpanel-zh-cn*.ipk" -exec cp {} artifacts/ \;
         
-        # 更新feeds
-        ./scripts/feeds update -a
-        ./scripts/feeds install -a
-        
-        # 构建包
-        make package/luci-app-webpanel/compile V=s
-        
-        # 复制生成的IPK文件
-        mkdir -p ../artifacts/${MATRIX_SDK}
-        find bin/ -name "luci-app-webpanel*.ipk" -exec cp {} ../artifacts/${MATRIX_SDK} \;
-    
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4  # 使用v4版本
+      uses: actions/upload-artifact@v4
       with:
-        name: ipk-packages-${{ matrix.sdk }}
-        path: artifacts/${{ matrix.sdk }}/
-        if-no-files-found: error
-        retention-days: 5
+        name: ipk-packages
+        path: artifacts/
+        
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ipk-packages
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: Release ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
+        body: |
+          OpenWrt 23.05 Web Panel 插件包 (Mediatek Filogic 架构)
+          功能特性:
+          - 可配置多个内嵌网页
+          - 支持自定义URL和端口
+          - 标签页切换管理
+          包含文件:
+          - luci-app-webpanel_*.ipk
+          - luci-i18n-webpanel-zh-cn_*.ipk
+        files: |
+          *.ipk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
