@@ -20,41 +20,42 @@ s.anonymous = false
 o = s:option(Value, "name", translate("Panel Name"))
 o.datatype = "string"
 o.rmempty = false
+o.description = translate("Display name for this web panel in the menu")
 
 -- URL
-o = s:option(Value, "url", translate("Panel URL"), 
-    translate("Full URL of the web panel (e.g. http://192.168.1.1:8080)"))
+o = s:option(Value, "url", translate("Panel URL"))
 o.datatype = "string"
 o.rmempty = false
+o.description = translate("Full URL of the web panel (e.g. http://192.168.1.1:8080)")
 
 -- 宽度
-o = s:option(Value, "width", translate("Width"), 
-    translate("Width of the embedded frame (e.g. 100% or 800px)"))
+o = s:option(Value, "width", translate("Width"))
 o.default = "100%"
 o.datatype = "string"
+o.description = translate("Width of the embedded frame (e.g. 100% or 800px)")
 
 -- 高度
-o = s:option(Value, "height", translate("Height"), 
-    translate("Height of the embedded frame (e.g. 600px)"))
+o = s:option(Value, "height", translate("Height"))
 o.default = "600px"
 o.datatype = "string"
+o.description = translate("Height of the embedded frame (e.g. 600px)")
 
 -- 边框
-o = s:option(Flag, "border", translate("Show Border"), 
-    translate("Show border around the embedded frame"))
+o = s:option(Flag, "border", translate("Show Border"))
 o.default = "1"
 o.rmempty = false
+o.description = translate("Show border around the embedded frame")
 
 -- 滚动条
-o = s:option(Flag, "scrolling", translate("Enable Scrolling"), 
-    translate("Enable scrollbars if content is larger than frame"))
+o = s:option(Flag, "scrolling", translate("Enable Scrolling"))
 o.default = "1"
 o.rmempty = false
+o.description = translate("Enable scrollbars if content is larger than frame")
 
 -- 刷新间隔
-o = s:option(Value, "refresh", translate("Refresh Interval (seconds)"), 
-    translate("Set to 0 to disable auto-refresh"))
+o = s:option(Value, "refresh", translate("Refresh Interval"))
 o.datatype = "uinteger"
 o.default = "0"
+o.description = translate("Auto-refresh interval in seconds (0 to disable)")
 
 return m
