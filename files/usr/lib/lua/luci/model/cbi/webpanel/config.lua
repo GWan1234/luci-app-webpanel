@@ -1,3 +1,6 @@
+-- 
+m:append(Template("webpanel/cbi_overrides"))
+
 m = Map("webpanel", translate("Web Panels Configuration"), 
     translate("Configure multiple web panels to embed in LuCI interface"))
 
