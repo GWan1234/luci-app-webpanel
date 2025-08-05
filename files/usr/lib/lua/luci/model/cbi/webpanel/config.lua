@@ -1,11 +1,11 @@
-m = Map("myiframe", translate("Embedded Web Pages Configuration"), 
-    translate("Configure external web pages to be embedded in OpenWRT LuCI interface"))
+m = Map("webpanel", translate("Web Panel Configuration"), 
+    translate("Configure external web panels to embed in LuCI interface"))
 
-s = m:section(NamedSection, "config", "myiframe", translate("Settings"))
+s = m:section(NamedSection, "config", "webpanel", translate("Settings"))
 s.addremove = false
 
-o = s:option(Value, "url", translate("Page URL"), 
-    translate("Full URL of the page to embed (e.g. http://192.168.1.1:3030)"))
+o = s:option(Value, "url", translate("Panel URL"), 
+    translate("Full URL of the web panel to embed (e.g. http://192.168.1.1:3030)"))
 o.datatype = "string"
 o.rmempty = false
 
@@ -21,6 +21,11 @@ o.datatype = "string"
 
 o = s:option(Flag, "border", translate("Show Border"), 
     translate("Show border around the embedded frame"))
+o.default = "1"
+o.rmempty = false
+
+o = s:option(Flag, "scrolling", translate("Enable Scrolling"), 
+    translate("Enable scrollbars if content is larger than frame"))
 o.default = "1"
 o.rmempty = false
 
