@@ -1,13 +1,7 @@
 module("luci.controller.webpanel", package.seeall)
 
-function index()
-    entry({"admin", "services", "webpanel"}, firstchild(), _("Web Panels"), 60).dependent = false
-    entry({"admin", "services", "webpanel", "config"}, cbi("webpanel/config"), _("Configuration"), 1)
-    refresh_menus()
-end
-
--- 刷新菜单函数
-function refresh_menus()
+-- 先定义函数再调用
+local function refresh_menus()
     local uci = luci.model.uci.cursor()
     local panels = uci:get_all("webpanel") or {}
     local count = 0
@@ -22,7 +16,7 @@ function refresh_menus()
             entry({"admin", "services", "webpanel", section[".name"]}, 
                  call("action_view_panel", section[".name"]), 
                  section.name or "Unnamed Panel",
-                 count + 10)  -- 排序值基于面板数量
+                 count + 10)
             count = count + 1
         end)
 end
@@ -42,12 +36,12 @@ function action_view_panel(panel_id)
     })
 end
 
--- 配置保存处理
-function action_config()
-    if luci.http.formvalue("cbi.apply") then
-        refresh_menus()
-        luci.dispatcher.build_url_cache()
-    end
+function index()
+    entry({"admin", "services", "webpanel"}, firstchild(), _("Web Panels"), 60).dependent = false
+    entry({"admin", "services", "webpanel", "config"}, cbi("webpanel/config"), _("Configuration"), 1)
+    
+    -- 现在可以安全调用refresh_menus了
+    refresh_menus()
 end
 
 -- 注册UCI变更回调
