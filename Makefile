@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-webpanel
-PKG_VERSION:=1.0
+PKG_VERSION:=3.0
 PKG_RELEASE:=1
 PKG_MAINTAINER:=Your Name <your.email@example.com>
 PKG_LICENSE:=MIT
