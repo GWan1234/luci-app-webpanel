@@ -2,6 +2,19 @@ module("luci.controller.webpanel", package.seeall)
 
 local dispatcher = require "luci.dispatcher"
 local uci = require "luci.model.uci".cursor()
+local fs = require "nixio.fs"
+
+-- 定义清理和重启函数
+local function cleanup_and_restart()
+    -- 删除luci缓存文件
+    for file in fs.glob("/tmp/luci-indexcache.*.json") do
+        fs.unlink(file)
+    end
+    
+    -- 重启服务（异步执行，避免阻塞）
+    os.execute("/etc/init.d/uhttpd restart >/dev/null 2>&1 &")
+    os.execute("/etc/init.d/rpcd restart >/dev/null 2>&1 &")
+end
 
 -- 定义刷新菜单函数
 local function refresh_menus()
@@ -59,8 +72,9 @@ function index()
     refresh_menus()
 end
 
--- UCI配置变更回调
+-- UCI 配置变更回调（确保在修改后执行清理）
 uci:revert("webpanel", function()
     refresh_menus()
     dispatcher.build_url_cache()
+    cleanup_and_restart()
 end)
