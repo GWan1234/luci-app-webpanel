@@ -1,0 +1,24 @@
+/* 隐藏默认表头 */
+.cbi-section-table thead {
+    display: none;
+}
+
+/* 自定义表头 */
+.custom-table-header {
+    background: #f5f5f5;
+    font-weight: bold;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* 单元格统一样式 */
+.cbi-section-table td {
+    padding: 8px;
+    vertical-align: middle;
+    border-bottom: 1px solid #eee;
+}
+
+/* 按钮样式 */
+.cbi-button-edit {
+    padding: 3px 8px !important;
+}
