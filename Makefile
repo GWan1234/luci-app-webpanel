@@ -2,8 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-webpanel
 PKG_VERSION:=3.0
-PKG_RELEASE:=1
-PKG_MAINTAINER:=Your Name <your.email@example.com>
+PKG_RELEASE:=2
+PKG_MAINTAINER:=LeeHe-gif
 PKG_LICENSE:=MIT
 
 include $(INCLUDE_DIR)/package.mk
@@ -45,6 +45,7 @@ define Package/$(PKG_NAME)/install
     # 安装视图文件
     $(INSTALL_DIR) $(1)/usr/lib/lua/luci/view/webpanel
     $(INSTALL_DATA) ./files/usr/lib/lua/luci/view/webpanel/cbi_style.htm $(1)/usr/lib/lua/luci/view/webpanel/
+    $(INSTALL_DATA) ./files/usr/lib/lua/luci/view/webpanel/iframe.htm $(1)/usr/lib/lua/luci/view/webpanel/
     
     # 安装静态资源
     $(INSTALL_DIR) $(1)/www/luci-static/resources/view/webpanel
