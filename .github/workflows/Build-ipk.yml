@@ -28,6 +28,7 @@ jobs:
       run: |
         mkdir -p $SDK_PATH/package/luci-app-webpanel
         cp -r ./files $SDK_PATH/package/luci-app-webpanel/
+        cp -r ./root $SDK_PATH/package/luci-app-webpanel/
         cp Makefile $SDK_PATH/package/luci-app-webpanel/
         # 确保 feeds 已更新
         $SDK_PATH/scripts/feeds update -a
