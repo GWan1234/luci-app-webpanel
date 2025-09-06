@@ -1,16 +1,16 @@
 config webpanel 'global'
     option enabled '1'
 
-config panel 'mcsm'
-    option name 'MCSM'
-    option url 'http://192.168.10.1:23333/'
+config panel 
+    option name '5GSmartCase'
+    option url 'http://192.168.66.1:9527/'
     option width '100%'
     option height '600px'
     option border '1'
     option refresh '0'
     option scrolling '1'
 
-config panel 'alist'
+config panel 
     option name 'OpenAlist'
     option url 'http://192.168.10.1:5244/'
     option width '100%'
